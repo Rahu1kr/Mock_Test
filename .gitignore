@@ -1,0 +1,17 @@
+node_modules/
+.next/
+dist/
+.env
+.env.local
+.env*.local
+.DS_Store
+*.log
+
+# Source PDFs and the question bank extracted from them are third-party exam
+# compilations — keep them out of source control. The data lives in MongoDB;
+# re-run scripts/extract-pdf.mjs if you need the CSVs again.
+content/pdfs/
+content/extracted/
+
+# Local, machine-specific tool permissions
+.claude/settings.local.json

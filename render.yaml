@@ -1,0 +1,22 @@
+# Render blueprint for the Express API.
+# In Render: New → Blueprint → point at this repo. Then set the two secret
+# values (MONGODB_URI, CORS_ORIGIN) in the dashboard — they are marked sync:false
+# so they are never read from source control.
+services:
+  - type: web
+    name: geo-pyq-api
+    runtime: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: 20.19.4
+      - key: JWT_SECRET
+        generateValue: true
+      - key: MONGODB_URI
+        sync: false
+      - key: CORS_ORIGIN
+        sync: false
