@@ -15,13 +15,51 @@ function isExpired(attempt: AttemptDoc): boolean {
   return Date.now() > attempt.startedAt.getTime() + attempt.durationMinutes * 60_000;
 }
 
-/** Start (or resume) an attempt at one paper in one mode. */
+/**
+ * Reports whether the user already has an unfinished attempt at this paper, so
+ * the UI can offer "resume" vs "start over" rather than silently resuming.
+ */
+attemptsRouter.get("/in-progress", async (req, res) => {
+  const { examId, mode } = req.query as { examId?: string; mode?: string };
+  if (!examId || (mode !== "practice" && mode !== "exam")) {
+    return res.status(400).json({ error: "examId and mode are required" });
+  }
+  const year = req.query.year === undefined || req.query.year === "" ? null : Number(req.query.year);
+  const session = ((req.query.session as string) ?? "").trim();
+
+  const attempt = await Attempt.findOne({
+    userId: req.auth!.userId,
+    examId,
+    year,
+    session,
+    mode,
+    status: "in_progress",
+  });
+  if (!attempt) return res.json({ exists: false });
+
+  if (isExpired(attempt)) {
+    const finished = await submitAttempt(attempt.id, "auto_submitted");
+    return res.json({ exists: false, expiredAttemptId: finished.id });
+  }
+
+  res.json({
+    exists: true,
+    attemptId: attempt.id,
+    answeredCount: attempt.answers.filter((a) => a.selectedOption).length,
+    totalQuestions: attempt.questionIds.length,
+    startedAt: attempt.startedAt,
+    durationMinutes: attempt.durationMinutes,
+  });
+});
+
+/** Start an attempt at one paper. Resumes an unfinished one unless restart. */
 attemptsRouter.post("/", async (req, res) => {
-  const { examId, year, session, mode } = req.body as {
+  const { examId, year, session, mode, restart } = req.body as {
     examId?: string;
     year?: number | null;
     session?: string;
     mode?: "practice" | "exam";
+    restart?: boolean;
   };
   if (!examId) return res.status(400).json({ error: "examId is required" });
   if (mode !== "practice" && mode !== "exam") {
@@ -49,7 +87,11 @@ attemptsRouter.post("/", async (req, res) => {
         .status(409)
         .json({ error: "Previous attempt expired", attemptId: finished.id });
     }
-    return res.json({ attemptId: existing.id, resumed: true });
+    if (!restart) return res.json({ attemptId: existing.id, resumed: true });
+
+    // Starting over: discard the unfinished attempt rather than leaving it
+    // stranded in_progress forever (practice attempts never expire on their own).
+    await Attempt.deleteOne({ _id: existing._id });
   }
 
   const questions = await Question.find({

@@ -106,6 +106,16 @@ export interface AttemptHistoryItem {
   examId: { _id: string; name: string; code: string; group: string } | null;
 }
 
+/** GET /attempts/in-progress — is there an unfinished attempt at this paper? */
+export interface InProgressInfo {
+  exists: boolean;
+  attemptId?: string;
+  answeredCount?: number;
+  totalQuestions?: number;
+  startedAt?: string;
+  durationMinutes?: number | null;
+}
+
 /** Response from PATCH /attempts/:id/answer — practice mode returns the answer. */
 export interface AnswerResponse {
   ok: true;
