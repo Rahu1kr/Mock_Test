@@ -8,7 +8,10 @@ services:
     runtime: node
     plan: free
     rootDir: backend
-    buildCommand: npm ci && npm run build
+    # --include=dev is required: Render sets NODE_ENV=production, which makes
+    # npm skip devDependencies — and tsc plus every @types/* package lives
+    # there, so the TypeScript build would fail without it.
+    buildCommand: npm ci --include=dev && npm run build
     startCommand: npm start
     healthCheckPath: /api/health
     envVars:
