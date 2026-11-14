@@ -238,7 +238,10 @@ async function buildAttemptView(attempt: AttemptDoc) {
     })),
     questions: questions.map((q) => ({
       id: q.id,
+      questionNumber: q.questionNumber,
       questionText: q.questionText,
+      matchList: q.matchList,
+      stemAfter: q.stemAfter,
       options: q.options,
       year: q.year,
       topicId: q.topicId,

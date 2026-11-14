@@ -8,7 +8,8 @@ import express, { NextFunction, Request, Response } from "express";
 
 import cors from "cors";
 import { connectDb } from "./config/db.js";
-import { requireAdmin } from "./middleware/auth.js";
+import { requireAdmin, requireAuth } from "./middleware/auth.js";
+import { figuresRouter } from "./routes/figures.js";
 import { authRouter } from "./routes/auth.js";
 import { examsRouter } from "./routes/exams.js";
 import { topicsRouter } from "./routes/topics.js";
@@ -57,9 +58,12 @@ app.get("/api/health", (_req, res) => {
 
 
 app.use("/api/auth", authRouter);
-app.use("/api/exams", examsRouter);
-app.use("/api/topics", topicsRouter);
-app.use("/api/questions", questionsRouter);
+// The question bank includes licensed solution text, so every content route
+// needs a signed-in account — the app is private, invite-only.
+app.use("/api/exams", requireAuth, examsRouter);
+app.use("/api/topics", requireAuth, topicsRouter);
+app.use("/api/questions", requireAuth, questionsRouter);
+app.use("/api/figures", figuresRouter);
 app.use("/api/attempts", attemptsRouter);
 
 app.use("/api/admin/exams", requireAdmin, adminExamsRouter);

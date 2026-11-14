@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { api } from "@/lib/api";
 import type { Question, Topic } from "@/lib/types";
+import { QuestionBody, RichText } from "@/components/QuestionContent";
 import { Card, EmptyNote, ErrorNote, PageShell, Spinner } from "@/components/ui";
 
 /** Tap-to-reveal browsing for one topic, pooled across every year. */
@@ -103,7 +104,7 @@ export default function TopicQuestionsPage() {
                       {i + 1}.
                     </span>
                     <div className="min-w-0 flex-1">
-                      <p className="font-medium">{q.questionText}</p>
+                      <QuestionBody question={q} />
                       {q.year && <p className="mt-1 text-xs text-muted">{q.year}</p>}
 
                       <ul className="mt-3 space-y-1.5">
@@ -118,8 +119,10 @@ export default function TopicQuestionsPage() {
                                   : "border-border"
                               }`}
                             >
-                              <span className="mr-2 font-semibold">{opt.key}.</span>
-                              {opt.text}
+                              <div className="flex gap-2">
+                                <span className="font-semibold">{opt.key}.</span>
+                                <RichText text={opt.text} className="flex-1" />
+                              </div>
                             </li>
                           );
                         })}
@@ -138,7 +141,7 @@ export default function TopicQuestionsPage() {
                             <span className="font-semibold">Answer: </span>
                             {q.correctOption}
                           </p>
-                          {q.explanation && <p className="mt-1.5 text-muted">{q.explanation}</p>}
+                          {q.explanation && <RichText text={q.explanation} className="mt-2" />}
                           {q.sourceCitation && (
                             <p className="mt-1.5 text-xs text-muted">
                               Source: {q.sourceCitation}

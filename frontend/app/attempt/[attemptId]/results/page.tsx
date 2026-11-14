@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { api } from "@/lib/api";
 import type { AttemptView } from "@/lib/types";
+import { QuestionBody, RichText } from "@/components/QuestionContent";
 import { Button, Card, ErrorNote, PageShell, Spinner } from "@/components/ui";
 
 export default function ResultsPage() {
@@ -103,7 +104,7 @@ export default function ResultsPage() {
                     {q.year && <span className="text-xs text-muted">{q.year}</span>}
                   </div>
 
-                  <p className="mt-2 font-medium">{q.questionText}</p>
+                  <QuestionBody question={q} className="mt-2" />
 
                   <ul className="mt-3 space-y-1.5">
                     {q.options.map((opt) => {
@@ -120,8 +121,10 @@ export default function ResultsPage() {
                                 : "border-border"
                           }`}
                         >
-                          <span className="mr-2 font-semibold">{opt.key}.</span>
-                          {opt.text}
+                          <div className="flex gap-2">
+                            <span className="font-semibold">{opt.key}.</span>
+                            <RichText text={opt.text} className="flex-1" />
+                          </div>
                           {isGiven && !isCorrectOpt && (
                             <span className="ml-2 text-xs">(your answer)</span>
                           )}
@@ -132,9 +135,10 @@ export default function ResultsPage() {
                   </ul>
 
                   {q.explanation && (
-                    <p className="mt-3 rounded-xl bg-background p-3 text-sm text-muted">
-                      {q.explanation}
-                    </p>
+                    <RichText
+                      text={q.explanation}
+                      className="mt-3 rounded-xl bg-background p-3 text-sm"
+                    />
                   )}
                   {q.sourceCitation && (
                     <p className="mt-2 text-xs text-muted">Source: {q.sourceCitation}</p>

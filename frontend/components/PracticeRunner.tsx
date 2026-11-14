@@ -6,6 +6,7 @@ import { api } from "@/lib/api";
 import { saveAnswer } from "@/lib/offlineQueue";
 import type { AttemptQuestion, AttemptView, OptionKey } from "@/lib/types";
 import { Button, Card } from "@/components/ui";
+import { QuestionBody, RichText } from "@/components/QuestionContent";
 
 /**
  * Practice mode: every question on one page. Tapping an option records it and
@@ -106,7 +107,7 @@ function PracticeQuestion({
       <div className="flex items-start gap-3">
         <span className="mt-0.5 shrink-0 text-sm font-semibold text-muted">{index}.</span>
         <div className="min-w-0 flex-1">
-          <p className="font-medium">{question.questionText}</p>
+          <QuestionBody question={question} />
 
           <div className="mt-3 space-y-2">
             {question.options.map((opt) => {
@@ -127,7 +128,7 @@ function PracticeQuestion({
                   }`}
                 >
                   <span className="font-semibold">{opt.key}.</span>
-                  <span className="flex-1">{opt.text}</span>
+                  <RichText text={opt.text} className="flex-1" />
                   {answered && isCorrect && <span className="text-xs font-medium">✓ correct</span>}
                   {answered && isPicked && !isCorrect && (
                     <span className="text-xs font-medium">your answer</span>
@@ -142,7 +143,7 @@ function PracticeQuestion({
               <p className={gotItRight ? "font-medium text-correct" : "font-medium text-wrong"}>
                 {gotItRight ? "Correct" : `Incorrect — the answer is ${question.correctOption}`}
               </p>
-              {question.explanation && <p className="mt-1.5 text-muted">{question.explanation}</p>}
+              {question.explanation && <RichText text={question.explanation} className="mt-2" />}
               {question.sourceCitation && (
                 <p className="mt-1.5 text-xs text-muted">Source: {question.sourceCitation}</p>
               )}

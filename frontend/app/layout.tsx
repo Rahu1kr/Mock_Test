@@ -1,9 +1,12 @@
 import type { Metadata, Viewport } from "next";
+import "katex/dist/katex.min.css";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth";
 import { ServiceWorkerRegistrar } from "@/components/ServiceWorkerRegistrar";
 import { InstallHint } from "@/components/InstallHint";
 import { BottomNav } from "@/components/BottomNav";
+import { ConfirmProvider } from "@/components/ConfirmDialog";
+import { AuthGate } from "@/components/AuthGate";
 
 export const metadata: Metadata = {
   title: "Geo PYQ — UGC NET & SET Geography",
@@ -34,9 +37,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body>
         <AuthProvider>
-          {children}
-          <BottomNav />
-          <InstallHint />
+          <ConfirmProvider>
+            <AuthGate>{children}</AuthGate>
+            <BottomNav />
+            <InstallHint />
+          </ConfirmProvider>
         </AuthProvider>
         <ServiceWorkerRegistrar />
       </body>

@@ -11,7 +11,8 @@
     "prebuild": "[ -f node_modules/.bin/tsc ] || npm ci --include=dev",
     "build": "tsc -p tsconfig.json",
     "start": "node dist/server.js",
-    "lint": "eslint src --ext .ts"
+    "lint": "eslint src --ext .ts",
+    "import:papers": "tsx src/scripts/import-papers.ts"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

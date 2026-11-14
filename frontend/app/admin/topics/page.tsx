@@ -4,8 +4,10 @@ import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import type { Exam, Topic } from "@/lib/types";
 import { Button, Card, EmptyNote, ErrorNote, Field, Spinner, inputClass } from "@/components/ui";
+import { useConfirm } from "@/components/ConfirmDialog";
 
 export default function AdminTopicsPage() {
+  const confirm = useConfirm();
   const [exams, setExams] = useState<Exam[]>([]);
   const [examId, setExamId] = useState("");
   const [topics, setTopics] = useState<Topic[] | null>(null);
@@ -47,7 +49,13 @@ export default function AdminTopicsPage() {
   }
 
   async function remove(topic: Topic) {
-    if (!window.confirm(`Delete topic "${topic.name}"?`)) return;
+    const ok = await confirm({
+      title: "Delete topic?",
+      message: `"${topic.name}" will be removed.`,
+      confirmLabel: "Delete",
+      danger: true,
+    });
+    if (!ok) return;
     setError(null);
     try {
       await api(`/admin/topics/${topic._id}`, { method: "DELETE" });

@@ -36,12 +36,29 @@ export interface QuestionOption {
   text: string;
 }
 
+export interface MatchListItem {
+  label: string;
+  text: string;
+}
+
+/** "Match List I with List II" — both lists, row-aligned as printed. */
+export interface MatchList {
+  leftTitle: string;
+  rightTitle: string;
+  left: MatchListItem[];
+  right: MatchListItem[];
+}
+
 export interface Question {
   _id: string;
   examId: string;
   topicId: string | null;
   year: number | null;
+  questionNumber?: number | null;
+  /** Markdown (tables, $math$, figures). */
   questionText: string;
+  matchList?: MatchList | null;
+  stemAfter?: string;
   options: QuestionOption[];
   correctOption: OptionKey;
   explanation: string;
@@ -54,7 +71,10 @@ export type AttemptStatus = "in_progress" | "submitted" | "auto_submitted";
 /** In exam mode these omit correctOption/explanation until the attempt is submitted. */
 export interface AttemptQuestion {
   id: string;
+  questionNumber?: number | null;
   questionText: string;
+  matchList?: MatchList | null;
+  stemAfter?: string;
   options: QuestionOption[];
   year: number | null;
   topicId: string | null;

@@ -7,6 +7,7 @@ import { ApiError, api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import type { AttemptMode, Exam, InProgressInfo, Paper } from "@/lib/types";
 import { Button, Card, ErrorNote, PageShell, Spinner } from "@/components/ui";
+import { useConfirm } from "@/components/ConfirmDialog";
 
 /** The [year] route segment carries a paper slug, e.g. "2024-december". */
 export default function ModeChooserPage() {
@@ -180,6 +181,7 @@ function ModeCard({
   resumeNote?: string;
 }) {
   const anyBusy = busy !== null;
+  const confirm = useConfirm();
 
   return (
     <Card className="flex h-full flex-col">
@@ -212,14 +214,14 @@ function ModeCard({
             </Button>
             <Button
               variant="secondary"
-              onClick={() => {
-                if (
-                  window.confirm(
-                    `Start over? Your ${unfinished.answeredCount} saved answer(s) for this paper will be discarded.`
-                  )
-                ) {
-                  onStart(mode, true);
-                }
+              onClick={async () => {
+                const ok = await confirm({
+                  title: "Start over?",
+                  message: `Your ${unfinished.answeredCount} saved answer(s) for this paper will be discarded.`,
+                  confirmLabel: "Start over",
+                  danger: true,
+                });
+                if (ok) onStart(mode, true);
               }}
               disabled={disabled || anyBusy}
               className="flex-1"

@@ -13,13 +13,17 @@ authRouter.post("/register", async (req, res) => {
   if (password.length < 8) {
     return res.status(400).json({ error: "password must be at least 8 characters" });
   }
+  // Role is never taken from the request body — otherwise anyone could register
+  // themselves as admin. The very first account bootstraps as the admin. After
+  // that the app is invite-only: the admin creates accounts (POST
+  // /api/admin/users), unless ALLOW_SIGNUP=true reopens public signup.
+  const isFirstUser = (await User.estimatedDocumentCount()) === 0;
+  if (!isFirstUser && process.env.ALLOW_SIGNUP !== "true") {
+    return res.status(403).json({ error: "Signup is closed. Ask the admin for an account." });
+  }
+
   const existing = await User.findOne({ email: email.toLowerCase() });
   if (existing) return res.status(409).json({ error: "User already exists" });
-
-  // Role is never taken from the request body — otherwise anyone could register
-  // themselves as admin. The very first account bootstraps as the admin; every
-  // later signup is a normal user, and only an admin can promote others.
-  const isFirstUser = (await User.estimatedDocumentCount()) === 0;
 
   const passwordHash = await bcrypt.hash(password, 10);
   const user = await User.create({

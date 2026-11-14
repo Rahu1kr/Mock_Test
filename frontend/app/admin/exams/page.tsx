@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { api } from "@/lib/api";
 import type { Exam } from "@/lib/types";
 import { Button, Card, ErrorNote, Field, Spinner, inputClass } from "@/components/ui";
+import { useConfirm } from "@/components/ConfirmDialog";
 
 const BLANK = {
   name: "",
@@ -17,6 +18,7 @@ const BLANK = {
 };
 
 export default function AdminExamsPage() {
+  const confirm = useConfirm();
   const [exams, setExams] = useState<Exam[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState<Exam | null>(null);
@@ -70,7 +72,13 @@ export default function AdminExamsPage() {
   }
 
   async function remove(exam: Exam) {
-    if (!window.confirm(`Delete "${exam.name}"? This cannot be undone.`)) return;
+    const ok = await confirm({
+      title: `Delete "${exam.name}"?`,
+      message: "This cannot be undone.",
+      confirmLabel: "Delete",
+      danger: true,
+    });
+    if (!ok) return;
     setError(null);
     try {
       await api(`/admin/exams/${exam._id}`, { method: "DELETE" });

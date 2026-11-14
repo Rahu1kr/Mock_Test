@@ -26,6 +26,16 @@ export class ApiError extends Error {
   }
 }
 
+let unauthorizedHandler: (() => void) | null = null;
+
+/** Registers what to do when the API rejects the stored token. Returns an unsubscribe. */
+export function onUnauthorized(handler: () => void): () => void {
+  unauthorizedHandler = handler;
+  return () => {
+    if (unauthorizedHandler === handler) unauthorizedHandler = null;
+  };
+}
+
 interface RequestOptions {
   method?: string;
   body?: unknown;
@@ -47,6 +57,8 @@ export async function api<T>(path: string, options: RequestOptions = {}): Promis
 
   const text = await res.text();
   const parsed: unknown = text ? safeJson(text) : null;
+
+  if (res.status === 401 && token) unauthorizedHandler?.();
 
   if (!res.ok) {
     const message =

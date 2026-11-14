@@ -46,9 +46,13 @@ npm run dev              # http://localhost:3000
 
 ## Accounts
 
-**The first account that registers automatically becomes the admin.** Every later signup is a
-normal user. Roles are never accepted from the signup request — only an existing admin can promote
-someone, via `PATCH /api/admin/users/:id/role`.
+**The app is private and invite-only.** The question bank contains licensed solution text, so
+every content API needs a signed-in account, and logged-out visitors only see the sign-in page.
+
+**The first account that registers automatically becomes the admin.** After that, public signup is
+closed: the admin adds people under **Admin → Users** (set `ALLOW_SIGNUP=true` on the backend only
+if you ever want to reopen it). Roles are never accepted from the signup request — only an existing
+admin can promote someone, via `PATCH /api/admin/users/:id/role`.
 
 Create the admin once:
 
@@ -94,6 +98,43 @@ paper to create or maintain. Import a year, and that year appears for users imme
 CSV columns: `exam_code, topic_name, year, question_text, option_a..option_d, correct_option,
 explanation, source_citation`. Only `exam_code`, `question_text`, the four options and
 `correct_option` are required — but always set `year`, since that is what creates the paper.
+
+### Importing PYQ papers from PDF
+
+For the PW-compiled UGC NET Geography PDFs in `content/pdfs/` (questions → answer key → text
+solutions, one file per sitting). Nothing needs splitting: section boundaries are found
+automatically.
+
+```bash
+# 1. Convert (offline: reads the PDF's own text layer, no API key). Needs poppler
+#    (brew install poppler). All 26 papers take about 3 minutes.
+cd scripts
+node parse-paper.mjs "../content/pdfs/UGC_Geo_December 2019.pdf"   # one paper
+node parse-paper.mjs --all                                         # every PDF
+#    → content/extracted/<paper>.json, <paper>.report.txt, <paper>/figures/
+
+# 2. Read <paper>.report.txt — it lists anything to check by hand
+#    (key vs solution disagreements, match lists it couldn't read, formulas in options).
+
+# 3. Import into MongoDB (dry run first)
+cd ../backend
+npm run import:papers -- --dry --all
+npm run import:papers -- --all
+```
+
+What you get per question: the stem, **match-the-list questions as two real lists** (rendered
+side by side like the paper, whichever of the PDF's several list layouts was used), comprehension
+passages, picture options, the official answer key, and the **full text solution** as Markdown —
+paragraphs, bold and bullet lists. Anything text can't reproduce faithfully (solution tables,
+typeset formulas, diagrams) is cut out of the page as an image with the PW watermark bleached
+out, so it looks exactly like the PDF. Figures that are embedded photos/maps are copied as-is.
+
+Re-importing a paper updates questions in place (matched by question number, or by `Q.<n>` in
+older CSV citations), so attempt history and topic assignments survive. All of `content/pdfs` and
+`content/extracted` is gitignored — the content lives only in MongoDB.
+
+`scripts/extract-paper.mjs` is an alternative converter that has Claude read each page image
+instead (needs `ANTHROPIC_API_KEY`, roughly $80–100 for all papers). It writes the same JSON.
 
 Starter content lives in [`content/`](content/).
 

@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import { api } from "@/lib/api";
 import type { Exam, Question, Topic } from "@/lib/types";
 import { Button, Card, EmptyNote, ErrorNote, Field, Spinner, inputClass } from "@/components/ui";
+import { QuestionBody } from "@/components/QuestionContent";
+import { useConfirm } from "@/components/ConfirmDialog";
 
 type Choice = "A" | "B" | "C" | "D";
 const KEYS: Choice[] = ["A", "B", "C", "D"];
@@ -19,6 +21,7 @@ const BLANK = {
 };
 
 export default function AdminQuestionsPage() {
+  const confirm = useConfirm();
   const [exams, setExams] = useState<Exam[]>([]);
   const [examId, setExamId] = useState("");
   const [topics, setTopics] = useState<Topic[]>([]);
@@ -122,7 +125,13 @@ export default function AdminQuestionsPage() {
   }
 
   async function remove(q: Question) {
-    if (!window.confirm("Delete this question?")) return;
+    const ok = await confirm({
+      title: "Delete this question?",
+      message: "This cannot be undone.",
+      confirmLabel: "Delete",
+      danger: true,
+    });
+    if (!ok) return;
     try {
       await api(`/admin/questions/${q._id}`, { method: "DELETE" });
       await load(examId);
@@ -293,7 +302,7 @@ export default function AdminQuestionsPage() {
                       {i + 1}. {q.year ?? "Undated"} · {topicName(q.topicId)} · answer{" "}
                       {q.correctOption}
                     </p>
-                    <p className="mt-1 font-medium">{q.questionText}</p>
+                    <QuestionBody question={q} className="mt-1" />
                   </div>
                   <div className="flex shrink-0 gap-2">
                     <Button variant="secondary" onClick={() => startEdit(q)}>

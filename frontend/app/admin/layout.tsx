@@ -13,6 +13,7 @@ const TABS = [
   { href: "/admin/questions", label: "Questions" },
   { href: "/admin/papers", label: "Papers" },
   { href: "/admin/upload", label: "CSV upload" },
+  { href: "/admin/users", label: "Users" },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

@@ -6,6 +6,7 @@ import { api } from "@/lib/api";
 import { flushQueue, pendingCount, saveAnswer } from "@/lib/offlineQueue";
 import { formatRemaining, useCountdown } from "@/lib/timer";
 import type { AttemptView, OptionKey } from "@/lib/types";
+import { QuestionBody, RichText } from "@/components/QuestionContent";
 import { Button, Card } from "@/components/ui";
 
 type Status = "not-visited" | "not-answered" | "answered" | "review" | "answered-review";
@@ -165,7 +166,7 @@ export function ExamRunner({ attempt }: { attempt: AttemptView }) {
               </button>
             </div>
 
-            <p className="mt-3 font-medium">{question.questionText}</p>
+            <QuestionBody question={question} className="mt-3" />
 
             <div className="mt-4 space-y-2">
               {question.options.map((opt) => {
@@ -187,7 +188,7 @@ export function ExamRunner({ attempt }: { attempt: AttemptView }) {
                     >
                       {opt.key}
                     </span>
-                    <span className="flex-1">{opt.text}</span>
+                    <RichText text={opt.text} className="flex-1" />
                   </button>
                 );
               })}
