@@ -175,6 +175,27 @@ Pick a section, pick a year, then choose a mode:
 
 ## Deploying
 
+### Option A: one EC2 box (current setup)
+
+Both apps run on a single Ubuntu instance under pm2, behind nginx on port 80: `/api/*` goes to
+Express on 4000, everything else to Next on 3000. The frontend is built on your machine with
+`NEXT_PUBLIC_API_BASE_URL=""` (same origin), because the 1 GB instance can't run `next build`.
+
+```bash
+deploy/deploy-ec2.sh --setup   # first time: also installs nginx config + pm2 boot hook
+deploy/deploy-ec2.sh           # every later deploy: build, sync, restart
+```
+
+Host, user and key default to the current instance; override with `EC2_HOST`, `EC2_USER`,
+`EC2_KEY`. `backend/.env` is uploaded once and then edited only on the server
+(`~/geo-app/backend/.env`). The instance's security group must allow inbound TCP 80.
+
+No domain means no HTTPS, and iOS only offers Add-to-Home-Screen / the service worker over HTTPS.
+Point a domain at the instance and run `sudo apt install certbot python3-certbot-nginx && sudo
+certbot --nginx` to fix that.
+
+### Option B: Render + Vercel
+
 Backend → Render. Frontend → Vercel. Both free tiers. Deploy the backend first: the frontend needs
 its URL baked in at build time.
 
